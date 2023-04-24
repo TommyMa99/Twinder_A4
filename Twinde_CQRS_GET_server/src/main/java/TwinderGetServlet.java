@@ -82,8 +82,9 @@ public class TwinderGetServlet extends HttpServlet {
     }
 
     private MatchStats getMatchStats(String userId) {
-        String findDislikeQuery = "SELECT Count(*) AS c FROM SwipeData WHERE swipee_id = '" + userId + "'" + "AND direction = 'left'";
-        String findLikeQuery = "SELECT Count(*) AS c FROM SwipeData WHERE swipee_id = '" + userId + "'" + "AND direction = 'right'";
+//        String findDislikeQuery = "SELECT Count(*) AS c FROM SwipeData WHERE swipee_id = '" + userId + "'" + "AND direction = 'left'";
+//        String findLikeQuery = "SELECT Count(*) AS c FROM SwipeData WHERE swipee_id = '" + userId + "'" + "AND direction = 'right'";
+        String findStatsQuery = "SELECT SUM(direction='right') AS numLikes, SUM(direction='left') AS numDisLikes FROM SwipeData WHERE swipee_id = '" + userId + "'";
         Connection connection;
         PreparedStatement pstmt;
         try {
@@ -93,13 +94,19 @@ public class TwinderGetServlet extends HttpServlet {
             ResultSet rs = pstmt.executeQuery();
             String dislikeNum = "";
             String likeNum = "";
-            while (rs.next()) {
-                dislikeNum = rs.getString("c");
-            }
-            pstmt = connection.prepareStatement(findLikeQuery);
+//            while (rs.next()) {
+//                dislikeNum = rs.getString("c");
+//            }
+//            pstmt = connection.prepareStatement(findLikeQuery);
+//            rs = pstmt.executeQuery();
+//            while (rs.next()) {
+//                likeNum = rs.getString("c");
+//            }
+            pstmt = connection.prepareStatement(findStatsQuery);
             rs = pstmt.executeQuery();
-            while (rs.next()) {
-                likeNum = rs.getString("c");
+            if (rs.next()) {
+                likeNum = rs.getString("numLikes");
+                dislikeNum = rs.getString("numDisLikes");
             }
             MatchStats matchStats = new MatchStats(Integer.parseInt(likeNum), Integer.parseInt(dislikeNum));
             connection.commit();
@@ -115,21 +122,22 @@ public class TwinderGetServlet extends HttpServlet {
     private Matches getMatches(String userId) {
         Connection connection;
         PreparedStatement pstmt;
-        String findQuery = "SELECT swiper_id FROM SwipeData WHERE swipee_id =" + "'" + userId + "'" + " AND direction = 'right'";
+//        String findQuery = "SELECT swiper_id FROM SwipeData WHERE swipee_id =" + "'" + userId + "'" + " AND direction = 'right'";
+        String findQuery = "SELECT swiper_id FROM SwipeData WHERE swipee_id =" + "'" + userId + "'" + " AND direction = 'right' LIMIT 100";
         Matches match = new Matches();
         try {
             connection = DatabaseConnectionPool.getConnection();
             pstmt = connection.prepareStatement(findQuery);
             connection.setAutoCommit(false);
-            System.out.println(findQuery);
+//            System.out.println(findQuery);
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
-                System.out.println(rs);
+//                System.out.println(rs);
                 String matchId = rs.getString("swiper_id");
                 match.addToList(matchId);
-                if (match.getMatchList().size() >= 100) {
-                    break;
-                }
+//                if (match.getMatchList().size() >= 100) {
+//                    break;
+//                }
             }
             connection.commit();
             connection.setAutoCommit(true);
@@ -144,7 +152,8 @@ public class TwinderGetServlet extends HttpServlet {
     private boolean isSwiperExisted(String userId) {
         Connection connection;
         PreparedStatement pstmt;
-        String findQuery = "SELECT * FROM SwipeData WHERE swiper_id = '" + userId + "'";
+//        String findQuery = "SELECT * FROM SwipeData WHERE swiper_id = '" + userId + "'";
+        String findQuery = "SELECT swiper_id FROM SwipeData WHERE swiper_id = '" + userId + "' LIMIT 1";
         try {
             connection = DatabaseConnectionPool.getConnection();
             pstmt = connection.prepareStatement(findQuery);
@@ -161,7 +170,8 @@ public class TwinderGetServlet extends HttpServlet {
     private boolean isSwipeeExisted(String userId) {
         Connection connection;
         PreparedStatement pstmt;
-        String findQuery = "SELECT * FROM SwipeData WHERE swipee_id = '" + userId + "'";
+//        String findQuery = "SELECT * FROM SwipeData WHERE swipee_id = '" + userId + "'";
+        String findQuery = "SELECT swipee_id FROM SwipeData WHERE swipee_id = '" + userId + "' LIMIT 1";
         try {
             connection = DatabaseConnectionPool.getConnection();
             connection.setAutoCommit(false);

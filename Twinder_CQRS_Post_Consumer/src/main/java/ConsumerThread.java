@@ -26,15 +26,13 @@ public class ConsumerThread implements Runnable {
 
     public ConsumerThread(Connection connection, ExecutorService executor, AmazonDynamoDB client) throws SQLException {
         this.connection = connection;
-        System.out.println("here");
         this.executor = executor;
-        BasicAWSCredentials awsCreds = new BasicAWSCredentials("AKIAQPD34WPIA5ECJEFF", "Q3g2CfSinptKqeJsLjCGUHgZz7Eygp6+Vw8yYW+u");
-//        BasicAWSCredentials awsCreds = new BasicAWSCredentials("ASIAWIODWU2YNTV63OMB", "WSZCW5e6ArT/wTsFi+0iubtZTLq9Qw/7SOtTFsA2");
         this.client = client;
+        System.out.println("Here");
     }
     @Override
     public void run() {
-        int batchSize = 25;
+        int batchSize = 20;
         try {
             channel = this.connection.createChannel();
             channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
@@ -73,7 +71,6 @@ public class ConsumerThread implements Runnable {
                             WriteRequest writeRequest = new WriteRequest().withPutRequest(putRequest);
                             writeRequests.add(writeRequest);
                         }
-                        BatchWriteItemResult result = null;
                         BatchWriteItemRequest batchWriteItemRequest = new BatchWriteItemRequest()
                                 .withRequestItems(Map.of("twinder_post", writeRequests));
                         client.batchWriteItem(batchWriteItemRequest);

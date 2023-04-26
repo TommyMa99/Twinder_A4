@@ -16,9 +16,9 @@ public class TwinderServlet extends HttpServlet {
     private RMQChannelPool pool;
     private Connection connection;
     private final static String HOST_NAME = "ec2-52-25-109-172.us-west-2.compute.amazonaws.com";
-    private final static String USER_NAME = "rabbit_user";
-    private final static String PASSWORD = "GLANT123,./";
-    private final static String VIRTUAL_HOST_NAME = "broker";
+    private final static String USER_NAME = "rabbit_usrName";
+    private final static String PASSWORD = "rabbit_password";
+    private final static String VIRTUAL_HOST_NAME = "rabbbit_host";
     private final static String EXCHANGE_NAME = "swipe_task";
 
     public void init(ServletConfig config) throws ServletException {

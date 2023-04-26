@@ -5,8 +5,8 @@ import java.util.ArrayList;
 public class Matches {
     private ArrayList<String> matchList;
 
-    public Matches() {
-        this.matchList = new ArrayList<>();
+    public Matches(ArrayList<String> matchList) {
+        this.matchList = matchList;
     }
 
     public void addToList(String userId){

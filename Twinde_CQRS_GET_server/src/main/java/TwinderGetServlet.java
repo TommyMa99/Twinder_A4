@@ -47,8 +47,8 @@ public class TwinderGetServlet extends HttpServlet {
             if (Integer.parseInt(userId) > 1000000 || Integer.parseInt(userId) < 1){
                 sendUserNotFoundResponse(response);
             } else {
-                if (isSwipeeExisted(userId)) {
-                    Matches match = getMatches(userId);
+                if (isMatchExisted(userId)) {
+                    String match = getMatches(userId);
                     sendRetrieveOkResponse(response, match);
                 } else {
                     sendUserNotFoundResponse(response);
@@ -71,7 +71,7 @@ public class TwinderGetServlet extends HttpServlet {
             if (Integer.parseInt(userId) > 1000000 || Integer.parseInt(userId) < 1){
                 sendUserNotFoundResponse(response);
             } else {
-                if (isSwipeeExisted(userId)) {
+                if (isStatExisted(userId)) {
                     MatchStats stat = getMatchStats(userId);
                     sendRetrieveOkResponse(response, stat);
                 } else {
@@ -82,33 +82,22 @@ public class TwinderGetServlet extends HttpServlet {
     }
 
     private MatchStats getMatchStats(String userId) {
-//        String findDislikeQuery = "SELECT Count(*) AS c FROM SwipeData WHERE swipee_id = '" + userId + "'" + "AND direction = 'left'";
-//        String findLikeQuery = "SELECT Count(*) AS c FROM SwipeData WHERE swipee_id = '" + userId + "'" + "AND direction = 'right'";
-        String findStatsQuery = "SELECT SUM(direction='right') AS numLikes, SUM(direction='left') AS numDisLikes FROM SwipeData WHERE swipee_id = '" + userId + "'";
+        String findStatsQuery = "SELECT likes, dislikes FROM Stats WHERE user_id = '" + userId + "'";
         Connection connection;
         PreparedStatement pstmt;
         try {
             connection = DatabaseConnectionPool.getConnection();
-            pstmt = connection.prepareStatement(findDislikeQuery);
             connection.setAutoCommit(false);
-            ResultSet rs = pstmt.executeQuery();
-            String dislikeNum = "";
-            String likeNum = "";
-//            while (rs.next()) {
-//                dislikeNum = rs.getString("c");
-//            }
-//            pstmt = connection.prepareStatement(findLikeQuery);
-//            rs = pstmt.executeQuery();
-//            while (rs.next()) {
-//                likeNum = rs.getString("c");
-//            }
+            ResultSet rs;
+            int dislikeNum = 0;
+            int likeNum = 0;
             pstmt = connection.prepareStatement(findStatsQuery);
             rs = pstmt.executeQuery();
             if (rs.next()) {
-                likeNum = rs.getString("numLikes");
-                dislikeNum = rs.getString("numDisLikes");
+                likeNum = rs.getInt("likes");
+                dislikeNum = rs.getInt("dislikes");
             }
-            MatchStats matchStats = new MatchStats(Integer.parseInt(likeNum), Integer.parseInt(dislikeNum));
+            MatchStats matchStats = new MatchStats(likeNum, dislikeNum);
             connection.commit();
             connection.setAutoCommit(true);
             connection.close();
@@ -119,25 +108,18 @@ public class TwinderGetServlet extends HttpServlet {
         }
     }
 
-    private Matches getMatches(String userId) {
+    private String getMatches(String userId) {
         Connection connection;
         PreparedStatement pstmt;
-//        String findQuery = "SELECT swiper_id FROM SwipeData WHERE swipee_id =" + "'" + userId + "'" + " AND direction = 'right'";
-        String findQuery = "SELECT swiper_id FROM SwipeData WHERE swipee_id =" + "'" + userId + "'" + " AND direction = 'right' LIMIT 100";
-        Matches match = new Matches();
+        String findQuery = "SELECT match_list FROM Matches WHERE user_id =" + "'" + userId + "'";
+        String matchList = "";
         try {
             connection = DatabaseConnectionPool.getConnection();
             pstmt = connection.prepareStatement(findQuery);
             connection.setAutoCommit(false);
-//            System.out.println(findQuery);
             ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-//                System.out.println(rs);
-                String matchId = rs.getString("swiper_id");
-                match.addToList(matchId);
-//                if (match.getMatchList().size() >= 100) {
-//                    break;
-//                }
+            if (rs.next()) {
+                matchList = rs.getString("match_list");
             }
             connection.commit();
             connection.setAutoCommit(true);
@@ -146,14 +128,14 @@ public class TwinderGetServlet extends HttpServlet {
         } catch (SQLException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        return match;
+        return matchList;
     }
 
-    private boolean isSwiperExisted(String userId) {
+    private boolean isStatExisted(String userId) {
         Connection connection;
         PreparedStatement pstmt;
 //        String findQuery = "SELECT * FROM SwipeData WHERE swiper_id = '" + userId + "'";
-        String findQuery = "SELECT swiper_id FROM SwipeData WHERE swiper_id = '" + userId + "' LIMIT 1";
+        String findQuery = "SELECT user_id FROM Stats WHERE user_id = '" + userId + "' LIMIT 1";
         try {
             connection = DatabaseConnectionPool.getConnection();
             pstmt = connection.prepareStatement(findQuery);
@@ -167,11 +149,10 @@ public class TwinderGetServlet extends HttpServlet {
         }
     }
 
-    private boolean isSwipeeExisted(String userId) {
+    private boolean isMatchExisted(String userId) {
         Connection connection;
         PreparedStatement pstmt;
-//        String findQuery = "SELECT * FROM SwipeData WHERE swipee_id = '" + userId + "'";
-        String findQuery = "SELECT swipee_id FROM SwipeData WHERE swipee_id = '" + userId + "' LIMIT 1";
+        String findQuery = "SELECT user_id FROM Matches WHERE user_id = '" + userId + "' LIMIT 1";
         try {
             connection = DatabaseConnectionPool.getConnection();
             connection.setAutoCommit(false);

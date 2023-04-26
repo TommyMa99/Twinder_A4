@@ -3,8 +3,8 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import java.sql.*;
 
 public class DatabaseConnectionPool {
-    private static final String JDBC_URL = "jdbc:mysql://twinder-mysql-db.cswcvfjifpvk.us-east-2.rds.amazonaws.com/swipeInfoDB";
-    private static final String USERNAME = "admin";
+    private static final String JDBC_URL = "jdbc_url";
+    private static final String USERNAME = "user";
     private static final String PASSWORD = "password";
     private static final int MAX_TOTAL_CONNECTIONS = 100;
 
